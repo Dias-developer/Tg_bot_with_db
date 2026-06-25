@@ -1,5 +1,6 @@
 import sqlite3
 
+### Основные функций
 def create_table():
     db = sqlite3.connect('database/clients.db')
     c = db.cursor()
@@ -33,3 +34,15 @@ def show_clients():
     db.close()
 
     return clients
+
+def delete_client_by_id(client_id):
+    db = sqlite3.connect('database/clients.db')
+    c = db.cursor()
+
+    c.execute(
+        'DELETE FROM clients WHERE id = ?',
+        (client_id,)
+    )
+
+    db.commit()
+    db.close()
