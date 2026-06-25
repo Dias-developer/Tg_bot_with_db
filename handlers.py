@@ -3,14 +3,14 @@ from aiogram.types import Message, KeyboardButton, ReplyKeyboardMarkup
 from aiogram.filters import CommandStart
 import asyncio
 
-from db import add_clients, show_clients
+from db import add_clients, show_clients, delete_client_by_id
 router = Router()
 
 def crud_inline_keyboard():
     keyboard = ReplyKeyboardMarkup(
         keyboard=[
-            [KeyboardButton(text='Добавить')],[KeyboardButton(text='Изменить')],
-            [KeyboardButton(text='Показать')],[KeyboardButton(text='Удалить')],
+            [KeyboardButton(text='Добавить')],[KeyboardButton(text='Удалить')],
+            [KeyboardButton(text='Показать')]
         ],
         resize_keyboard=True,
     )
@@ -25,7 +25,7 @@ async def cmd_start(message: Message):
         "Я бот для учета клиентов.",
         reply_markup=crud_inline_keyboard(),
     )
-# Adding
+# Add clients
 @router.message(F.text == "Добавить")
 async def add_client_menu(message: Message):
     await message.answer(
@@ -85,3 +85,30 @@ async def show_client_menu(message: Message):
         )
 
     await message.answer(text)
+
+# delete clients
+@router.message(F.text == "Удалить")
+async def delete_clients_menu(message: Message):
+    await message.answer('Если хотите удалить клиента по ID, то воспользуйтесь командой /delete -> номер ID <-')
+
+@router.message(F.text.startswith("/delete"))
+async def delete_client_handler(message: Message):
+    try:
+        client_id = int(message.text.split()[1])
+
+        delete_client_by_id(client_id)
+
+        await message.answer(
+            f"✅ Клиент с ID {client_id} удалён."
+        )
+
+    except IndexError:
+        await message.answer(
+            "Укажите ID.\n"
+            "Пример: /delete 3"
+        )
+
+    except ValueError:
+        await message.answer(
+            "ID должен быть числом."
+        )
