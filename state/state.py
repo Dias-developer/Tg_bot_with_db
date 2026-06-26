@@ -1,0 +1,11 @@
+from aiogram.fsm.state import State, StatesGroup
+
+
+class AddClient(StatesGroup):
+    waiting_for_username = State()
+    waiting_for_phone = State()
+    waiting_for_email = State()
+
+
+class DeleteClient(StatesGroup):
+    waiting_for_id = State()
