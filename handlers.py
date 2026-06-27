@@ -4,15 +4,15 @@ from aiogram.types import Message, KeyboardButton, ReplyKeyboardMarkup
 from aiogram.filters import CommandStart
 
 
-from state.state import AddClient, DeleteClient
-from db import add_clients, show_clients, delete_client_by_id
+from state.state import AddClient, DeleteClient, UpdateClient
+from db import add_clients, show_clients, delete_client_by_id, update_client_by_id_username, client_exists
 router = Router()
 
 def crud_inline_keyboard():
     keyboard = ReplyKeyboardMarkup(
         keyboard=[
             [KeyboardButton(text='Добавить')],[KeyboardButton(text='Удалить')],
-            [KeyboardButton(text='Показать')]
+            [KeyboardButton(text='Показать')],[KeyboardButton(text='Изменить')]
         ],
         resize_keyboard=True,
     )
@@ -29,7 +29,7 @@ async def cmd_start(message: Message):
         reply_markup=crud_inline_keyboard(),
     )
 
-# Add clients
+# Add Clients
 @router.message(F.text == "Добавить")
 async def add_client_menu(message: Message, state: FSMContext):
     await state.set_state(AddClient.waiting_for_username)
@@ -96,7 +96,8 @@ async def add_client_email(message: Message, state: FSMContext):
 
     await state.clear()
     await message.answer("✅ Клиент успешно добавлен.")
-# Show clients
+
+# Show Clients
 @router.message(F.text == "Показать")
 async def show_client_menu(message: Message):
     clients = show_clients()
@@ -107,17 +108,17 @@ async def show_client_menu(message: Message):
 
     text = 'Список клиентов:\n\n'
 
-    for clients in clients:
+    for client in clients:
         text += (
-            f"ID: {clients[0]}\n"
-            f"Имя: {clients[1]}\n"
-            f"Номер телефона: {clients[2]}\n"
-            f"Почта: {clients[3]}\n\n"
+            f"ID: {client[0]}\n"
+            f"Имя: {client[1]}\n"
+            f"Номер телефона: {client[2]}\n"
+            f"Почта: {client[3]}\n\n"
         )
 
     await message.answer(text)
 
-# delete clients
+# Delete Clients
 @router.message(F.text == "Удалить")
 async def delete_clients_menu(message: Message, state: FSMContext):
     await state.set_state(DeleteClient.waiting_for_id)
@@ -136,6 +137,10 @@ async def delete_client_handler(message: Message, state: FSMContext):
 
     client_id = int(client_id)
 
+    if not client_exists(client_id):
+        await message.answer("❌ Клиент с таким ID не найден!")
+        return
+
     delete_client_by_id(client_id)
 
     await state.clear()
@@ -143,3 +148,54 @@ async def delete_client_handler(message: Message, state: FSMContext):
     await message.answer(
         f"✅ Клиент с ID {client_id} удалён."
     )
+
+# Update Clients
+@router.message(F.text == 'Изменить')
+async def update_client(message: Message, state: FSMContext):
+    await state.set_state(UpdateClient.waiting_for_id)
+
+    await message.answer('Введите ID клиента:')
+
+@router.message(UpdateClient.waiting_for_id)
+async def update_client_using_id(message: Message, state: FSMContext):
+    client_id = message.text.strip()
+
+    if not client_id.isdigit():
+        await message.answer("Должно быть число!")
+        return
+    client_id = int(client_id)
+
+    if not client_exists(client_id):
+        await message.answer("❌ Клиент с таким ID не найден.")
+        return
+
+    await state.update_data(client_id=client_id)
+    await state.set_state(UpdateClient.waiting_for_username)
+
+    await message.answer('Введите новое имя клиента:')
+
+@router.message(UpdateClient.waiting_for_username)
+async def update_client_username(message: Message, state: FSMContext):
+    username = message.text.strip()
+
+    if len(username) > 20:
+        await message.answer('Слишком длинное имя!')
+        return
+
+    if not username.isalpha():
+        await message.answer("Имя должно содержать только буквы!")
+        return
+
+    data = await state.get_data()
+
+    result = update_client_by_id_username(data["client_id"], username)
+
+    if result == 0:
+        await message.answer("❌ Клиент с таким ID не найден.")
+    else:
+        await message.answer("✅ Имя клиента успешно обновлено.")
+
+    await state.clear()
+
+
+

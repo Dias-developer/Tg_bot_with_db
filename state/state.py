@@ -9,3 +9,9 @@ class AddClient(StatesGroup):
 
 class DeleteClient(StatesGroup):
     waiting_for_id = State()
+
+class UpdateClient(StatesGroup):
+    waiting_for_username = State()
+    waiting_for_phone = State()
+    waiting_for_email = State()
+    waiting_for_id = State()
