@@ -4,11 +4,10 @@ import os
 ### Основное
 # Create Table
 def create_table():
-    print("DB FUNCTION START")
     os.makedirs("database", exist_ok=True)
 
     db = sqlite3.connect('database/clients.db')
-    print("FOLDER CREATED")
+
     c = db.cursor()
 
     c.execute(''' CREATE TABLE IF NOT EXISTS clients (
