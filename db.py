@@ -1,8 +1,11 @@
 import sqlite3
+import os
 
-### Основные функций
+### Основное
 # Create Table
 def create_table():
+    os.makedirs("database", exist_ok=True)
+
     db = sqlite3.connect('database/clients.db')
     c = db.cursor()
 
@@ -71,6 +74,7 @@ def update_client_by_id_username(client_id, username):
 
 ### Utils
 def client_exists(client_id):
+
     db = sqlite3.connect('database/clients.db')
     c = db.cursor()
 
