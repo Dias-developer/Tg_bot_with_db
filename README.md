@@ -15,7 +15,7 @@ asyncio
 
 ⚙️ Установка
 1. Клонируйте репозиторий
-git clone https://github.com/ВашНик/НазваниеРепозитория.git
+git clone https://github.com/Dias-developer/Tg_bot_with_db.git
 
 2. Перейдите в папку проекта
 cd Tg_bot_with_db
