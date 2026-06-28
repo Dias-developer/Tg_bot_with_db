@@ -15,12 +15,6 @@ env/
 
 .env
 
-# SQLite databases
-
-database/
-*.db
-*.sqlite3
-
 # IDE
 
 .vscode/
